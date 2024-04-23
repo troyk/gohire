@@ -31,6 +31,7 @@ func main() {
 	}
 
 	websvr.HandleFunc("GET /", websvr.UsersIndex)
+	websvr.HandleFunc("POST /api/users", websvr.PostUsers)
 
 	httpServer := &http.Server{
 		Addr:    ":3001",
@@ -63,6 +64,11 @@ func (s *WebServer) UsersIndex(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (s *WebServer) PostUsers(w http.ResponseWriter, r *http.Request) {
+  log.Println("placeholder")
+  fmt.Fprintf(w, "hello from post users")
 }
 
 func NewAPIServer(db sqliteh.DB) *APIServer {
