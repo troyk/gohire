@@ -93,7 +93,8 @@ func (s *WebServer) PostUsersHandler(w http.ResponseWriter, r *http.Request) {
     http.Error(w, "Failed to add user", http.StatusInternalServerError)
     return
 	}
-  fmt.Fprint(w, "successfully added user")
+  //fmt.Fprint(w, "successfully added user")
+  http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func NewAPIServer(db sqliteh.DB) *APIServer {
