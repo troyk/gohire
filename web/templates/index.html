@@ -9,7 +9,13 @@
       <p class="mt-2 text-sm text-gray-700">A list of all the users in your account including their name, title, email and role.</p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-      <button type="button" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Add user</button>
+      <form action="api/users" method="POST" class="flex">
+        <input type="text" name="username" placeholder="Username" class="block rounded-md bg-white border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        <input type="text" name="first_name" placeholder="First Name" class="block rounded-md bg-white border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        <input type="text" name="last_name" placeholder="Last Name" class="ml-2 block rounded-md bg-white border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        <input type="password" name="password" placeholder="Password" class="ml-2 block rounded-md bg-white border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        <button type="submit" class="ml-2 block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-white">Add user</button>
+      </form>
     </div>
   </div>
   <div class="mt-8 flow-root">
