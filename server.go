@@ -31,7 +31,7 @@ func main() {
 	}
 
 	websvr.HandleFunc("GET /", websvr.UsersIndex)
-	websvr.HandleFunc("POST /api/users", websvr.PostUsers)
+	websvr.HandleFunc("POST /api/users", websvr.PostUsersHandler)
 
 	httpServer := &http.Server{
 		Addr:    ":3001",
@@ -66,9 +66,34 @@ func (s *WebServer) UsersIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *WebServer) PostUsers(w http.ResponseWriter, r *http.Request) {
-  log.Println("placeholder")
-  fmt.Fprintf(w, "hello from post users")
+func (s *WebServer) PostUsersHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+
+	if err != nil {
+		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+		return
+	}
+
+	username := r.Form.Get("username")
+	firstName := r.Form.Get("first_name")
+	lastName := r.Form.Get("last_name")
+	password := r.Form.Get("password")
+
+  postUsersRequest := &api.PostUsersRequest{
+		Username:     username,
+		FirstName: firstName,
+		LastName:  lastName,
+		Password:  password,
+	}
+
+	apireq := &connect.Request[api.PostUsersRequest]{Msg: postUsersRequest}
+
+  _, err = s.api.PostUsers(r.Context(), apireq)
+	if err != nil {
+    http.Error(w, "Failed to add user", http.StatusInternalServerError)
+    return
+	}
+  fmt.Fprint(w, "successfully added user")
 }
 
 func NewAPIServer(db sqliteh.DB) *APIServer {
@@ -111,5 +136,38 @@ func (s *APIServer) GetUsers(
 	res := connect.NewResponse(&api.GetUsersResponse{
 		Users: users,
 	})
+	return res, nil
+}
+
+func (s *APIServer) PostUsers(
+	ctx context.Context,
+	req *connect.Request[api.PostUsersRequest],
+) (*connect.Response[api.PostUsersResponse], error) {
+  userData := req.Msg
+
+  stmt, _, err := s.db.Prepare("INSERT INTO users (username, first_name, last_name, password) VALUES (?, ?, ?, ?)", sqliteh.SQLITE_PREPARE_NORMALIZE)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Finalize()
+
+	if err := stmt.BindText64(1, userData.Username); err != nil {
+		return nil, err
+	}
+  if err := stmt.BindText64(2, userData.FirstName); err != nil {
+		return nil, err
+	}
+	if err := stmt.BindText64(3, userData.LastName); err != nil {
+		return nil, err
+	}
+	if err := stmt.BindText64(4, userData.Password); err != nil {
+		return nil, err
+	}
+
+	if _, err := stmt.Step(nil); err != nil {
+		return nil, err
+	}
+
+  res := connect.NewResponse(&api.PostUsersResponse{})
 	return res, nil
 }
