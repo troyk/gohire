@@ -1,10 +1,13 @@
 syntax = "proto3";
 
 package api;
+
+option go_package = "gohire/proto/gen/api";
   
 service UserService {
     // rpc SignIn(SignInRequest) returns (SignInResponse) {}
     rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {}
+    rpc PostUsers(PostUsersRequest) returns (PostUsersResponse) {}
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {}
 }
 
@@ -34,6 +37,19 @@ message GetUsersRequest {
   
 message GetUsersResponse {
     repeated User users = 1;
+}
+
+message PostUsersRequest {
+    string username = 2;      
+    string first_name = 4;
+    string last_name = 5;
+    string password = 6;
+}
+  
+message PostUsersResponse {
+    string username = 2;      
+    string first_name = 4;
+    string last_name = 5;
 }
 
 message UpdateUserRequest {

@@ -35,6 +35,8 @@ const (
 const (
 	// UserServiceGetUsersProcedure is the fully-qualified name of the UserService's GetUsers RPC.
 	UserServiceGetUsersProcedure = "/api.UserService/GetUsers"
+	// UserServicePostUsersProcedure is the fully-qualified name of the UserService's PostUsers RPC.
+	UserServicePostUsersProcedure = "/api.UserService/PostUsers"
 	// UserServiceUpdateUserProcedure is the fully-qualified name of the UserService's UpdateUser RPC.
 	UserServiceUpdateUserProcedure = "/api.UserService/UpdateUser"
 )
@@ -43,6 +45,7 @@ const (
 var (
 	userServiceServiceDescriptor          = api.File_api_users_proto.Services().ByName("UserService")
 	userServiceGetUsersMethodDescriptor   = userServiceServiceDescriptor.Methods().ByName("GetUsers")
+	userServicePostUsersMethodDescriptor  = userServiceServiceDescriptor.Methods().ByName("PostUsers")
 	userServiceUpdateUserMethodDescriptor = userServiceServiceDescriptor.Methods().ByName("UpdateUser")
 )
 
@@ -50,6 +53,7 @@ var (
 type UserServiceClient interface {
 	// rpc SignIn(SignInRequest) returns (SignInResponse) {}
 	GetUsers(context.Context, *connect.Request[api.GetUsersRequest]) (*connect.Response[api.GetUsersResponse], error)
+	PostUsers(context.Context, *connect.Request[api.PostUsersRequest]) (*connect.Response[api.PostUsersResponse], error)
 	UpdateUser(context.Context, *connect.Request[api.UpdateUserRequest]) (*connect.Response[api.UpdateUserResponse], error)
 }
 
@@ -69,6 +73,12 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceGetUsersMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		postUsers: connect.NewClient[api.PostUsersRequest, api.PostUsersResponse](
+			httpClient,
+			baseURL+UserServicePostUsersProcedure,
+			connect.WithSchema(userServicePostUsersMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		updateUser: connect.NewClient[api.UpdateUserRequest, api.UpdateUserResponse](
 			httpClient,
 			baseURL+UserServiceUpdateUserProcedure,
@@ -81,12 +91,18 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
 	getUsers   *connect.Client[api.GetUsersRequest, api.GetUsersResponse]
+	postUsers  *connect.Client[api.PostUsersRequest, api.PostUsersResponse]
 	updateUser *connect.Client[api.UpdateUserRequest, api.UpdateUserResponse]
 }
 
 // GetUsers calls api.UserService.GetUsers.
 func (c *userServiceClient) GetUsers(ctx context.Context, req *connect.Request[api.GetUsersRequest]) (*connect.Response[api.GetUsersResponse], error) {
 	return c.getUsers.CallUnary(ctx, req)
+}
+
+// PostUsers calls api.UserService.PostUsers.
+func (c *userServiceClient) PostUsers(ctx context.Context, req *connect.Request[api.PostUsersRequest]) (*connect.Response[api.PostUsersResponse], error) {
+	return c.postUsers.CallUnary(ctx, req)
 }
 
 // UpdateUser calls api.UserService.UpdateUser.
@@ -98,6 +114,7 @@ func (c *userServiceClient) UpdateUser(ctx context.Context, req *connect.Request
 type UserServiceHandler interface {
 	// rpc SignIn(SignInRequest) returns (SignInResponse) {}
 	GetUsers(context.Context, *connect.Request[api.GetUsersRequest]) (*connect.Response[api.GetUsersResponse], error)
+	PostUsers(context.Context, *connect.Request[api.PostUsersRequest]) (*connect.Response[api.PostUsersResponse], error)
 	UpdateUser(context.Context, *connect.Request[api.UpdateUserRequest]) (*connect.Response[api.UpdateUserResponse], error)
 }
 
@@ -113,6 +130,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceGetUsersMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServicePostUsersHandler := connect.NewUnaryHandler(
+		UserServicePostUsersProcedure,
+		svc.PostUsers,
+		connect.WithSchema(userServicePostUsersMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	userServiceUpdateUserHandler := connect.NewUnaryHandler(
 		UserServiceUpdateUserProcedure,
 		svc.UpdateUser,
@@ -123,6 +146,8 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		switch r.URL.Path {
 		case UserServiceGetUsersProcedure:
 			userServiceGetUsersHandler.ServeHTTP(w, r)
+		case UserServicePostUsersProcedure:
+			userServicePostUsersHandler.ServeHTTP(w, r)
 		case UserServiceUpdateUserProcedure:
 			userServiceUpdateUserHandler.ServeHTTP(w, r)
 		default:
@@ -136,6 +161,10 @@ type UnimplementedUserServiceHandler struct{}
 
 func (UnimplementedUserServiceHandler) GetUsers(context.Context, *connect.Request[api.GetUsersRequest]) (*connect.Response[api.GetUsersResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.UserService.GetUsers is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) PostUsers(context.Context, *connect.Request[api.PostUsersRequest]) (*connect.Response[api.PostUsersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.UserService.PostUsers is not implemented"))
 }
 
 func (UnimplementedUserServiceHandler) UpdateUser(context.Context, *connect.Request[api.UpdateUserRequest]) (*connect.Response[api.UpdateUserResponse], error) {
